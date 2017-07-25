@@ -3,16 +3,37 @@ package main
 import "fmt"
 
 func main() {
-	fmt.Println(testDefer(2))
+	fmt.Println(calc())
+	fmt.Println(calc1())
+	fmt.Println(calc2())
 }
 
-func testDefer(a int) int {
+func calc() (a int) {
+	a = 5
 	defer func() {
 		a = a * 2
 	}()
 	return a
 }
 
+func calc1() int {
+	a := 5
+	defer func() {
+		a = a * 2
+	}()
+	return a
+}
+
+func calc2() int {
+	a := 5
+	defer func(i int) {
+		i = i * 2
+	}(a)
+	return a
+}
+
+// 不理解
+// TODO
 /*
 func main() {
 	fmt.Println(doubleScore(0))    //0
@@ -32,3 +53,7 @@ func doubleScore(source float32) (score float32) {
 	//或者
 	//return source * 2
 }*/
+
+// 闭包
+// 作用域
+// defer 运行原理
