@@ -1,11 +1,13 @@
 # QingStor Image Processing Usage Guide
 
-For processing the image stored in QingStor by a variety of basic operations, such as format, crop, watermark and so on. Please see [QingStor Image API](https://docs.qingcloud.com/qingstor/data_process/image_process/index.html) 
+For processing the image stored in QingStor by a variety of basic operations, such as format, crop, watermark and so on.
+Please see [QingStor Image API](https://docs.qingcloud.com/qingstor/data_process/image_process/index.html).
 
 ## Usage
-Before using the image service, you need to initialize the [Configuration](https://github.com/yunify/qingstor-sdk-go/blob/master/docs/configuration.md) and [QingStor Service](https://github.com/yunify/qingstor-sdk-go/blob/master/docs/qingstor_service_usage.md).
+	Before using the image service, you need to initialize the [Configuration](https://github.com/yunify/qingstor-sdk-go/blob/master/docs/configuration.md) and [QingStor Service](https://github.com/yunify/qingstor-sdk-go/blob/master/docs/qingstor_service_usage.md).
 
-```
+
+``` go
 //Import the latest version API
 import (
 	"github.com/yunify/qingstor-sdk-go/config"
@@ -16,9 +18,66 @@ import (
 
 ## Code Snippet
 
-The definition of the structure of the image processing，located in `qingstor-sdk-go/helpers/image.go`.These structs are used as arguments to the operation.
-
+Create configuration from Access Key and Initialize the QingStor service with a configuration.
+``` go
+// Initialize the QingStor service with a configuration
+config, _ := config.New("ACCESS_KEY_ID", "SECRET_ACCESS_KEY")
+service, _ := qs.Init(config)
 ```
+Initialize a QingStor bucket.
+``` go
+bucket, _ := service.Bucket("bucketName", "zoneID")
+```
+Initialize a image.
+``` go
+image := helper.InitImage(bucket, "imageName")
+```
+
+Now you can use the the high level APIs or basic image process API to do the image operation.
+
+Crop the image.
+``` go
+image = image.Crop(&helpers.CropParam{...operation_param...})
+```
+
+Rotate the image.
+``` go
+image = image.Rotate(&helpers.RotateParam{...operation_param...})
+```
+Resize the image.
+``` go
+image = image.Resize(&helpers.ResizeParam{...operation_param...})
+```
+Watermark the image.
+``` go
+image = image.WaterMark(&helpers.WaterMarkParam{...operation_param...})
+```
+WaterMarkImage the image.
+``` go
+image = image.WaterMarkImage(&helpers.WaterMarkImageParam{...operation_param...})
+```
+Format the image.
+``` go
+image = image.Format(&helpers.Format{...operation_param...})
+```
+Operation pipline, the image will be processed by order. The maximum number of operations in the pipeline is 10.
+``` go
+// Rotate and then resize the image
+image = image.Rotate(&helpers.RotateParam{
+	... operation_param...
+}).Resize(&helpers.ResizeParam{
+	... operation_param...
+})
+```
+Use the original basic API to rotate the image 90 angles.
+``` go
+operation := "rotate:a_90"
+imageProcessOutput, err := bucket.ImageProcess("yourImageName", &qs.ImageProcessInput{
+	Action: &operation})
+```
+
+`operation_param` is the image operation param, which definined in `qingstor-sdk-go/helpers/image.go`.
+``` go
 import "github.com/yunify/qingstor-sdk-go/service"
 // helpers/image.go
 type Image struct {
@@ -81,66 +140,11 @@ type FormatParam struct {
 
 ```
 
-Create configuration from Access Key and Initialize the QingStor service with a configuration
-```
-// Initialize the QingStor service with a configuration
-config, _ := config.New("ACCESS_KEY_ID", "SECRET_ACCESS_KEY")
-service, _ := qs.Init(config)
-```
-
-Initialize a QingStor bucket
-```
-bucket, _ := service.Bucket("bucketName", "zoneID")
-```
-Initialize a image 
-```
-image := helper.InitImage(bucket, "imageName")
-```
-Crop the image
-```
-image = image.Crop(&helpers.CropParam{...param_struct...})
-```
-Rotate the image
-```
-image = image.Rotate(&helpers.RotateParam{...param_struct...})
-```
-Resize the image
-```
-image = image.Resize(&helpers.ResizeParam{...param_struct...})
-```
-Watermark the image
-```
-image = image.WaterMark(&helpers.WaterMarkParam{...param_struct...})
-```
-WaterMarkImage the image
-```
-image = image.WaterMarkImage(&helpers.WaterMarkImageParam{...param_struct...})
-```
-Format the image
-
-```
-image = image.Format(&helpers.Format{...param_struct...})
-```
-
-Pipline model. The maximum number of operations in the pipeline is 10
-```
-image = image.Rotate(&helpers.RotateParam{
-	... param_struct...	
-}).Resize(&helpers.ResizeParam{
-	... param_struct...
-})
-```
-
-Use the original api to rotate the image 90 angles
-```
-operation := "rotate:a_90"
-imageProcessOutput, err := bucket.ImageProcess("yourImageName", &qs.ImageProcessInput{
-	Action: &operation})
-```
+__Quick Start Code Example:__
 
 Include a complete example, but the code needs to fill in your own information
 
-```
+``` go
 package main
 
 import (
@@ -234,7 +238,6 @@ func testOutput(out *qs.ImageProcessOutput) {
 	log.Println(*out.RequestID)
 	log.Println(out.Body)
 	log.Println(*out.ContentLength)
-
 }
 
 func checkErr(err error) {
