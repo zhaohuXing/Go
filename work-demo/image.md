@@ -1,47 +1,10 @@
 # QingStor Image Processing Usage Guide
 
-For the user stored in the QingStor object storage on a variety of basic processing, such as format conversion, cutting, flip, watermark and so on.
-
-Currently supported image formats are:
-- png
-- tiff
-- webp
-- jpeg
-- pdf
-- gif
-- svg
-
-> Comments are currently not supported on the encrypted image after processing, a single picture up to 10M.
-
-## Request Syntax
-
-```
-GET /<object-name>?image&action=<action>
-Host: <bucket-name>.pek3a.qingstor.com
-Date: <date>
-Authorization: <authorization-string>
-```
-
-- The action represents a set of operations on a picture.
-- The format of action is operation: k_v [, k_v] [| operation: k_v] [, k_v].
-- The operation represents the basic operation of the picture, such as crop, watermark and so on. Each operation can be followed by multiple key value pair as a parameter.
-- The k is the argument key of operation, and v is the argument value.
-- Multiple operations are concatenated as an action, which will sequentially manipulate the image, similar to the pipe.
-
-## Example Request
-```
-GET /myphoto.jpg?image&action=resize:w_300,h_400|rotate:a_90 HTTP/1.1
-Host: mybucket.pek3a.qingstor.com
-Date: Sun, 16 Aug 2015 09:05:00 GMT
-Authorization: authorization string
-```
-The above example will be fixed in accordance with 300 * 400 (px) fixed width and height of the abbreviated, and flip 90 degrees.
-
+For processing the image stored in QingStor by a variety of basic operations, such as format, crop, watermark and so on. Please see [QingStor Image API](https://docs.qingcloud.com/qingstor/data_process/image_process/index.html) 
 
 ## Usage
 Before using the image service, you need to initialize the [Configuration](https://github.com/yunify/qingstor-sdk-go/blob/master/docs/configuration.md) and [QingStor Service](https://github.com/yunify/qingstor-sdk-go/blob/master/docs/qingstor_service_usage.md).
 
-Here to provide a way to initialize, the other view [Configuration](https://github.com/yunify/qingstor-sdk-go/blob/master/docs/configuration.md) and [QingStor Service](https://github.com/yunify/qingstor-sdk-go/blob/master/docs/qingstor_service_usage.md).
 ```
 //Import the latest version API
 import (
@@ -53,7 +16,8 @@ import (
 
 ## Code Snippet
 
-The definition of the structure of the image processing
+The definition of the structure of the image processing，located in `qingstor-sdk-go/helpers/image.go`.These structs are used as arguments to the operation.
+
 ```
 import "github.com/yunify/qingstor-sdk-go/service"
 // helpers/image.go
@@ -76,49 +40,48 @@ const (
 	CropAuto
 )
 type CropParam struct {
-	Width   int         `json:"w,omitempty"`
-	Height  int         `json:"h,omitempty"`
-	Gravity CropGravity `json:"g"`
+	Width   int         `schema:"w,omitempty"`
+	Height  int         `schema:"h,omitempty"`
+	Gravity CropGravity `schema:"g"`
 }
 
 // About rotating image definitions
 type RotateParam struct {
-	Angle int `json:"a"`
+	Angle int `schema:"a"`
 }
 
 // About resizing image definitions
 type ResizeMode int
 type ResizeParam struct {
-	Width  int        `json:"w,omitempty"`
-	Height int        `json:"h,omitempty"`
-	Mode   ResizeMode `json:"m"`
+	Width  int        `schema:"w,omitempty"`
+	Height int        `schema:"h,omitempty"`
+	Mode   ResizeMode `schema:"m"`
 }
 
 // On the definition of text watermarking
 type WaterMarkParam struct {
-	Dpi     int     `json:"d,omitempty"`
-	Opacity float64 `json:"p,omitempty"`
-	Text    string  `json:"t"`
-	Color   string  `json:"c"`
+	Dpi     int     `schema:"d,omitempty"`
+	Opacity float64 `schema:"p,omitempty"`
+	Text    string  `schema:"t"`
+	Color   string  `schema:"c"`
 }
 
 // On the definition of image watermarking
  type WaterMarkImageParam struct {
-	Left    int     `json:"l"`
-	Top     int     `json:"t"`
-	Opacity float64 `json:"p,omitempty"`
-	Url     string  `json:"u"`
+	Left    int     `schema:"l"`
+	Top     int     `schema:"t"`
+	Opacity float64 `schema:"p,omitempty"`
+	Url     string  `schema:"u"`
 }
 
 // About image format conversion definitions
 type FormatParam struct {
-	Type string `json:"t"`
+	Type string `schema:"t"`
 }
 
 ```
 
 Create configuration from Access Key and Initialize the QingStor service with a configuration
-
 ```
 // Initialize the QingStor service with a configuration
 config, _ := config.New("ACCESS_KEY_ID", "SECRET_ACCESS_KEY")
@@ -135,31 +98,48 @@ image := helper.InitImage(bucket, "imageName")
 ```
 Crop the image
 ```
-image = image.Crop(&helpers.CropParam{...param_list...})
+image = image.Crop(&helpers.CropParam{...param_struct...})
 ```
 Rotate the image
 ```
-image = image.Rotate(&helpers.RotateParam{...param_list...})
+image = image.Rotate(&helpers.RotateParam{...param_struct...})
 ```
 Resize the image
 ```
-image = image.Resize(&helpers.ResizeParam{...param_list...})
+image = image.Resize(&helpers.ResizeParam{...param_struct...})
 ```
 Watermark the image
 ```
-image = image.WaterMark(&helpers.WaterMarkParam{...param_list...})
+image = image.WaterMark(&helpers.WaterMarkParam{...param_struct...})
 ```
 WaterMarkImage the image
 ```
-image = image.WaterMarkImage(&helpers.WaterMarkImageParam{...param_list...})
+image = image.WaterMarkImage(&helpers.WaterMarkImageParam{...param_struct...})
 ```
 Format the image
 
 ```
-image = image.Format(&helpers.Format{...param_list...})
+image = image.Format(&helpers.Format{...param_struct...})
+```
+
+Pipline model. The maximum number of operations in the pipeline is 10
+```
+image = image.Rotate(&helpers.RotateParam{
+	... param_struct...	
+}).Resize(&helpers.ResizeParam{
+	... param_struct...
+})
+```
+
+Use the original api to rotate the image 90 angles
+```
+angle := "rotate:a_90"
+imageprocessoutput, err := bucket.imageprocess("yourimagename", &qs.imageprocessinput{
+	action: &angle})
 ```
 
 Include a complete example, but the code needs to fill in your own information
+
 ```
 package main
 
@@ -228,6 +208,24 @@ func main() {
 	})
 	checkErr(image.Err)
 	testOutput(image.ImageOutput)
+
+	// Pipline model
+	// The maximum number of operations in the pipeline is 10
+	image = image.Rotate(&helpers.RotateParam{
+		Angle: 270,
+	}).Resize(&helpers.ResizeParam{
+		Width:  300,
+		Height: 300,
+	})
+	checkErr(image.Err)
+	testOutput(image.ImageOutput)
+
+	// Use the original api to rotate the image 90 angles
+	angle := "rotate:a_90"
+	imageprocessoutput, err := bucket.imageprocess("yourimagename", &qs.imageprocessinput{
+		action: &angle})
+	checkErr(err)
+	testOutput(imageProcessOutput)
 }
 
 // *qs.ImageProcessOutput: github.com/yunify/qingstor-sdk-go/service/object.go
