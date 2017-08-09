@@ -133,9 +133,9 @@ image = image.Rotate(&helpers.RotateParam{
 
 Use the original api to rotate the image 90 angles
 ```
-angle := "rotate:a_90"
-imageprocessoutput, err := bucket.imageprocess("yourimagename", &qs.imageprocessinput{
-	action: &angle})
+operation := "rotate:a_90"
+imageProcessOutput, err := bucket.ImageProcess("yourImageName", &qs.ImageProcessInput{
+	Action: &operation})
 ```
 
 Include a complete example, but the code needs to fill in your own information
@@ -221,9 +221,9 @@ func main() {
 	testOutput(image.ImageOutput)
 
 	// Use the original api to rotate the image 90 angles
-	angle := "rotate:a_90"
-	imageprocessoutput, err := bucket.imageprocess("yourimagename", &qs.imageprocessinput{
-		action: &angle})
+	operation := "rotate:a_90"
+	imageProcessOutput, err := bucket.ImageProcess("yourImageName", &qs.ImageProcessInput{
+		Action: &operation})
 	checkErr(err)
 	testOutput(imageProcessOutput)
 }
