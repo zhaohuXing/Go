@@ -4,8 +4,7 @@ For processing the image stored in QingStor by a variety of basic operations, su
 Please see [QingStor Image API](https://docs.qingcloud.com/qingstor/data_process/image_process/index.html).
 
 ## Usage
-	Before using the image service, you need to initialize the [Configuration](https://github.com/yunify/qingstor-sdk-go/blob/master/docs/configuration.md) and [QingStor Service](https://github.com/yunify/qingstor-sdk-go/blob/master/docs/qingstor_service_usage.md).
-
+Before using the image service, you need to initialize the [Configuration](https://github.com/yunify/qingstor-sdk-go/blob/master/docs/configuration.md) and [QingStor Service](https://github.com/yunify/qingstor-sdk-go/blob/master/docs/qingstor_service_usage.md).
 
 
 ``` go
