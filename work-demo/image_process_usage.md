@@ -34,6 +34,11 @@ image := helper.InitImage(bucket, "imageName")
 
 Now you can use the the high level APIs or basic image process API to do the image operation.
 
+Get the information of the image
+``` go
+imageProcessOutput, _ = image.Info()
+```
+
 Crop the image.
 ``` go
 image = image.Crop(&helpers.CropParam{...operation_param...})
@@ -95,6 +100,10 @@ const (
 	CropEast
 	CropSouth
 	CropWest
+	CropNorthWest
+	CropNorthEast
+	CropSouthWest
+	CropSouthEast
 	CropAuto
 )
 type CropParam struct {
@@ -129,7 +138,7 @@ type WaterMarkParam struct {
 	Left    int     `schema:"l"`
 	Top     int     `schema:"t"`
 	Opacity float64 `schema:"p,omitempty"`
-	Url     string  `schema:"u"`
+	URL     string  `schema:"u"`
 }
 
 // About image format conversion definitions
@@ -192,7 +201,7 @@ func main() {
 
 	// Image watermark, Watermark image url encoded by base64.
 	image = image.WaterMarkImage(&helpers.WaterMarkImageParam{
-		Url: "aHR0cHM6Ly9wZWszYS5xaW5nc3Rvci5jb20vaW1nLWRvYy1lZy9xaW5jbG91ZC5wbmc=",
+		URL: "aHR0cHM6Ly9wZWszYS5xaW5nc3Rvci5jb20vaW1nLWRvYy1lZy9xaW5jbG91ZC5wbmc",
 	})
 	checkErr(image.Err)
 	testOutput(image.ImageOutput)
@@ -223,9 +232,14 @@ func main() {
 	checkErr(image.Err)
 	testOutput(image.ImageOutput)
 
+	// Get the information of the image
+	imageProcessOutput, err := image.Info()
+	checkErr(err)
+	testOutput(imageProcessOutput)
+
 	// Use the original api to rotate the image 90 angles
 	operation := "rotate:a_90"
-	imageProcessOutput, err := bucket.ImageProcess("yourImageName", &qs.ImageProcessInput{
+	imageProcessOutput, err = bucket.ImageProcess("yourImageName", &qs.ImageProcessInput{
 		Action: &operation})
 	checkErr(err)
 	testOutput(imageProcessOutput)
