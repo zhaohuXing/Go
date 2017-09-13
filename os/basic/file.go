@@ -59,11 +59,3 @@ func SingleThreadCopy(sourceFile *os.File, newFile string) error {
 	defer nFile.Close()
 	return nil
 }
-
-// MultithreadCopy is copy source file to new file.
-func MultithreadCopy(sourceFile *os.File, newFile string, thread int) error {
-	type block struct {
-		start int
-		data  []byte
-	}
-}
